@@ -2,10 +2,11 @@ import random
 import numpy as np
 
 class Player():
-    def __init__(self,name,symbol):
+    def __init__(self,id,name,symbol):
+        self.id = id
         self.name = name
         self.symbol = symbol
-
+        self.start = False
 
 class Game():
     def __init__(self):
@@ -18,7 +19,6 @@ class Game():
         print(self.board[1])
         print(self.board[2])
         print()
-        print('eg')
 
     def setup_game(self):
         print('WELCOME TO TIC TAC TOE!')
@@ -41,24 +41,21 @@ class Game():
             except:
                 print('Please choose one of the signs: X or O')
 
-        human = Player(human_name,human_sign)
-        pc = Player('pc',pc_sign)
+        human = Player(1,human_name,human_sign)
+        pc = Player(2,'pc',pc_sign)
+        players_list = [human,pc]
+        random.shuffle(players_list)
+        
+        print(f'Ready! The first player to start is {players_list[0].name}')
 
-        first_player_random = random.choice([0,1])
-
-        if first_player_random == 0:
-            first_player = human
-        else:
-            first_player = pc
-
-        print(f'Ready! The first player to start is {first_player.name}')
-        return human, pc, first_player_random
+        return players_list
 
 
     def turn(self,player):
         possible_spaces = self.check_spaces("-")   
+
         if len(possible_spaces) == 0:
-            print(F'GAME OVER! WE HAVE A TIE')
+            print(F'***** GAME OVER! WE HAVE A TIE *****')
             return True
 
         if player.name=='pc':
@@ -105,20 +102,19 @@ class Game():
         nr_rows = len(self.board)
         for i in range(0,nr_rows):
             count = self.board[i].count(symbol)
-            print(f'count horizontal {count}')
-            print(self.board[i])
+            # print(f'count horizontal {count}')
             if count == 3:
                 return True
         return False
 
     def check_vertical(self,symbol):
-        nr_rows = len(self.board)
-        for i in range(0,nr_rows):
+        nr_cols = len(self.board[0])
+        for j in range(0,nr_cols):
             count = 0
-            for j in range(0,len(self.board[i])):
+            for i in range(0,len(self.board[j])):
                 if self.board[i][j]==symbol:
                     count += 1
-            print(f'count vertical {count}')
+            # print(f'count vertical {count}')
             if count == 3:
                 return True
 
@@ -126,48 +122,45 @@ class Game():
 
     def check_diagonal(self,symbol):
         nr_rows = len(self.board)
-
+        count_left = 0
+        count_right = 0
         for i in range(0,nr_rows):
-            count_left = 0
-            count_right = 0
-
             if self.board[i][i]==symbol:
                 count_left += 1
             if self.board[i][len(self.board[i])-1-i]==symbol:
-                count_right+=1
+                count_right += 1
             
-            print(f'count left diag {count_left}')
-            print(f'count right diag {count_right}')
+            # print(f'count left diag {count_left}')
+            # print(f'count right diag {count_right}')
 
-            if count_left == 3 or count_right == 3:
-                return True  
-            else:
-                return False
+        if count_left == 3 or count_right == 3:
+            return True  
+        else:
+            return False
 
 
     def check_winner(self,symbol):
         # check horizontal
+        # print(f'Checking winner for {symbol}')
         if self.check_horizontal(symbol):
-            return True
+            winner_found = True
         elif self.check_vertical(symbol):
-            return True
+            winner_found = True
         elif self.check_diagonal(symbol):
-            return True
+            winner_found = True
         else:
-            return False
+            winner_found = False
+
+        if winner_found:
+            print(F'***** Player {pl.name} WON! GAME END. *****')
+
+        return winner_found
 
 if __name__ == '__main__':
     new_game = Game()
-    human, pc, first_player_index = new_game.setup_game()
+    players_list = new_game.setup_game()
 
     winner_found = False
     while not winner_found:
-        if first_player_index == 0:
-            winner_found = new_game.turn(human)
-            winner_found = new_game.turn(pc)
-        else:
-            winner_found = new_game.turn(pc)
-            winner_found = new_game.turn(human)
-
-        
-        
+        for pl in players_list:
+            winner_found = new_game.turn(pl)     
